@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import {
-  WordpressApiConfig, UserCreate, UserResponse, UserUpdate, PostCreate, WordpressApiError, Categories, Post, Posts, SystemSettings
+  WordpressApiConfig, UserCreate, UserResponse, UserUpdate, PostCreate,
+  WordpressApiError, Categories, Post, Posts, SystemSettings, MySites,
+  Site
 } from './wordpress-api.interface';
 import { of, Observable } from 'rxjs';
 
@@ -251,9 +253,14 @@ export class WordpressApiService {
 
 
 
-  getMySites(): Observable<any> {
-    return this.http.get(this.urlSonubApi + '/my-sites', this.loginAuth);
+  getMySites(): Observable<MySites> {
+    return this.http.get<MySites>(this.urlSonubApi + '/my-sites', this.loginAuth);
   }
 
+
+
+  createSite(data: Site): Observable<Site> {
+    return this.http.post<Site>(this.urlSonubApi + '/create-site', data, this.loginAuth);
+  }
 
 }

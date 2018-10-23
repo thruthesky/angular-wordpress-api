@@ -142,3 +142,28 @@ export interface SystemSettings {
     categories: Categories;
 }
 
+
+
+export interface Site {
+    idx?: number;
+    domain?: string;        // Needed to create a site.
+    name: string;
+    description?: string;
+}
+
+
+export interface MySites {
+    max_domains: number;
+    max_sites: number;
+    available_no_of_domains: number;
+    available_no_of_sites: number;
+    sites: Array<Site>;
+}
+
+
+
+
+
+
+
+
