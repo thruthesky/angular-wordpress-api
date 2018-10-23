@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import {
-  WordpressApiConfig, UserCreate, UserResponse, UserUpdate, PostCreate, WordpressApiError, Categories, Post, Posts
+  WordpressApiConfig, UserCreate, UserResponse, UserUpdate, PostCreate, WordpressApiError, Categories, Post, Posts, SystemSettings
 } from './wordpress-api.interface';
+import { of, Observable } from 'rxjs';
 
 
 
@@ -12,12 +13,19 @@ export class WordpressApiService {
 
   static config: WordpressApiConfig = null;
 
+  static cache = {};
+
   constructor(
     private http: HttpClient
   ) {
     console.log('WordpressApiConfig: config: ', this.config);
+    this.doInit();
   }
 
+  doInit() {
+    console.log('WordpressApiService::doInit()');
+    this.getSystemSettings().subscribe(res => res, e => console.error(e));
+  }
 
 
   /**
@@ -46,6 +54,7 @@ export class WordpressApiService {
   get urlUsers(): string { return this.urlWordpressApiEndPoint + '/users'; }
   get urlPosts(): string { return this.urlWordpressApiEndPoint + '/posts'; }
   get urlCategories(): string { return this.urlWordpressApiEndPoint + '/categories'; }
+  get urlSonubApi(): string { return this.url + '/wp-json/sonub/v2019'; }
 
 
   /**
@@ -87,6 +96,30 @@ export class WordpressApiService {
     return httpOptions;
   }
 
+  /**
+   * Gets system settings from live server or from cached memory data.
+   * @desc since it caches on memory, you can call as many times as you want.
+   *    It will response with data from memory.
+   *
+   * @example
+       this.getSystemSettings().subscribe(res => res, e => console.error(e));
+        setTimeout(() => {
+          this.getSystemSettings().subscribe(res => res, e => console.error(e));
+        }, 1000);
+   */
+  getSystemSettings(): Observable<SystemSettings> {
+    const k = 'getSystemSettings';
+    if (this.getCache(k)) {
+      console.log('(c) Already got getSystemSettings. return cached data');
+      return of(this.getCache(k));
+    }
+    return this.http.get<SystemSettings>(this.urlSonubApi + '/system-settings', this.loginAuth).pipe(
+      tap(data => {
+        console.log('(l) Got system settings from server: ', data);
+        this.setCache(k, data);
+      })
+    );
+  }
 
   /**
    * Registers
@@ -128,7 +161,7 @@ export class WordpressApiService {
     if (!auth) {
       auth = this.loginAuth;
     }
-    return this.http.get<UserResponse>(this.url + '/wp-json/custom/api/profile', auth).pipe(
+    return this.http.get<UserResponse>(this.urlSonubApi + '/profile', auth).pipe(
       tap(data => this.saveUserData(<any>data))
     );
   }
@@ -186,14 +219,40 @@ export class WordpressApiService {
     return this.http.get<Posts>(this.urlPosts, this.loginAuth);
   }
 
+  getCache(code) {
+    if (WordpressApiService.cache[code]) {
+      return WordpressApiService.cache[code];
+    } else {
+      return null;
+    }
+  }
+
+  setCache(code, data) {
+    WordpressApiService.cache[code] = data;
+  }
+
   /**
    * Gets categories.
-   * @desc Use this method to know categories. You will need it on forum post page.
+   * @desc Use this method to know categories.
+   * @desc You will need it on pages where categories are needed lik in forum post page.
+   * @desc It caches on memory.
    * @example
    *    wp.getCategories().subscribe(res => console.log('res: ', res));
    */
-  getCategories() {
-    return this.http.get<Categories>(this.urlCategories, this.loginAuth);
+  getCategories(): Observable<Categories> {
+    const k = 'getCategories';
+    if (this.getCache(k)) {
+      return of(this.getCache(k));
+    }
+    return this.http.get<Categories>(this.urlCategories, this.loginAuth).pipe(
+      tap(data => this.setCache(k, data))
+    );
+  }
+
+
+
+  getMySites(): Observable<any> {
+    return this.http.get(this.urlSonubApi + '/my-sites', this.loginAuth);
   }
 
 

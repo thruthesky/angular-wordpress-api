@@ -130,7 +130,15 @@ export interface Category {
     slug: string;
     taxonomy: string;
     parent: number;
-    meta: Array<any>;
-    _links: any;
+    meta: Array<any>;   // Not avaiable on `getSystemSettings()`
+    _links: any;        // Not avaiable on `getSystemSettings()`
 }
 export type Categories = Array<Category>;
+
+
+export interface SystemSettings {
+    max_sites: number;
+    max_domains: number;
+    categories: Categories;
+}
+
