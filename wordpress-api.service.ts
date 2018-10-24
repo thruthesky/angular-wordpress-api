@@ -3,8 +3,10 @@ import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import {
   WordpressApiConfig, UserCreate, UserResponse, UserUpdate, PostCreate,
-  WordpressApiError, Categories, Post, Posts, SystemSettings, MySites,
-  Site
+  WordpressApiError, Categories, Post, Posts, SystemSettings,
+  Site,
+  Sites,
+  DomainAdd
 } from './wordpress-api.interface';
 import { of, Observable } from 'rxjs';
 
@@ -26,7 +28,7 @@ export class WordpressApiService {
 
   doInit() {
     console.log('WordpressApiService::doInit()');
-    this.getSystemSettings().subscribe(res => res, e => console.error(e));
+    this.systemSettings().subscribe(res => res, e => console.error(e));
   }
 
 
@@ -104,13 +106,13 @@ export class WordpressApiService {
    *    It will response with data from memory.
    *
    * @example
-       this.getSystemSettings().subscribe(res => res, e => console.error(e));
+       this.systemSettings().subscribe(res => res, e => console.error(e));
         setTimeout(() => {
-          this.getSystemSettings().subscribe(res => res, e => console.error(e));
+          this.systemSettings().subscribe(res => res, e => console.error(e));
         }, 1000);
    */
-  getSystemSettings(): Observable<SystemSettings> {
-    const k = 'getSystemSettings';
+  systemSettings(): Observable<SystemSettings> {
+    const k = 'systemSettings';
     if (this.getCache(k)) {
       console.log('(c) Already got getSystemSettings. return cached data');
       return of(this.getCache(k));
@@ -239,10 +241,10 @@ export class WordpressApiService {
    * @desc You will need it on pages where categories are needed lik in forum post page.
    * @desc It caches on memory.
    * @example
-   *    wp.getCategories().subscribe(res => console.log('res: ', res));
+   *    wp.categories().subscribe(res => console.log('res: ', res));
    */
-  getCategories(): Observable<Categories> {
-    const k = 'getCategories';
+  categories(): Observable<Categories> {
+    const k = 'categories';
     if (this.getCache(k)) {
       return of(this.getCache(k));
     }
@@ -253,14 +255,28 @@ export class WordpressApiService {
 
 
 
-  getMySites(): Observable<MySites> {
-    return this.http.get<MySites>(this.urlSonubApi + '/my-sites', this.loginAuth);
+  sites(): Observable<Sites> {
+    return this.http.get<Sites>(this.urlSonubApi + '/sites', this.loginAuth);
   }
 
+  site(idx_site): Observable<Site> {
+    return this.http.post<Site>(this.urlSonubApi + '/site', {idx_site: idx_site}, this.loginAuth);
+  }
 
 
   createSite(data: Site): Observable<Site> {
     return this.http.post<Site>(this.urlSonubApi + '/create-site', data, this.loginAuth);
+  }
+  updateSite(form: Site): Observable<Site> {
+    return this.http.post<Site>(this.urlSonubApi + '/update-site', form, this.loginAuth);
+  }
+
+
+  addDomain(data: DomainAdd): Observable<DomainAdd> {
+    return this.http.post<DomainAdd>(this.urlSonubApi + '/add-domain', data, this.loginAuth);
+  }
+  deleteDomain(idx_domain: string): Observable<Site> {
+    return this.http.post<Site>(this.urlSonubApi + '/delete-domain', {idx_domain: idx_domain}, this.loginAuth);
   }
 
 }

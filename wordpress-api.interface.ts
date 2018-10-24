@@ -145,20 +145,30 @@ export interface SystemSettings {
 
 
 export interface Site {
-    idx?: number;
-    domain?: string;        // Needed to create a site.
-    name: string;
+    idx?: string;
+    domain?: string;            // Needed to create a site.
+    domains?: Array<string>;    // Avaiable on response
+    name?: string;
     description?: string;
+    keywords?: string;
 }
 
 
-export interface MySites {
+
+export interface Sites {
     max_domains: number;
     max_sites: number;
-    available_no_of_domains: number;
-    available_no_of_sites: number;
+    available_domains: number;
+    available_sites: number;
     sites: Array<Site>;
 }
+
+
+export interface DomainAdd {
+    idx_site: string;
+    domain: string;
+}
+
 
 
 
