@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import {
@@ -9,17 +9,17 @@ import {
   DomainAdd
 } from './wordpress-api.interface';
 import { of, Observable } from 'rxjs';
+import { ConfigToken } from './wordpress-api.config';
 
 
 
 @Injectable()
 export class WordpressApiService {
 
-  static config: WordpressApiConfig = null;
-
   static cache = {};
 
   constructor(
+    @Inject(ConfigToken) private config: WordpressApiConfig,
     private http: HttpClient
   ) {
     console.log('WordpressApiConfig: config: ', this.config);
@@ -52,7 +52,7 @@ export class WordpressApiService {
     }
   }
 
-  get config(): WordpressApiConfig { return WordpressApiService.config; }
+  // get config(): WordpressApiConfig { return WordpressApiService.config; }
   get url(): string { return this.config.url; }
   get urlWordpressApiEndPoint(): string { return this.url + '/wp-json/wp/v2'; }
   get urlUsers(): string { return this.urlWordpressApiEndPoint + '/users'; }

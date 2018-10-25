@@ -1,6 +1,7 @@
-# angular-wordpress-api
+# Sonub Wordpress Rest Api
 
-Angular Wordpress Rest Api
+Angular Wordpress Rest Api Extended for Sonub
+
 
 ## Initialization
 
