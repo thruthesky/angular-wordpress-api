@@ -2,6 +2,8 @@
 
 export const INVALID_EMAIL = 'invalid_email';
 export const INVALID_USERNAME = 'invalid_username';
+export const INCORRECT_PASSWORD = 'incorrect_password';
+
 
 export interface UserCreate {
     username: string; // Login name for the user. Required: 1
@@ -116,6 +118,7 @@ export type Posts = Array<Post>;
 
 export interface WordpressApiConfig {
     url: string;
+    sessionStorage: string; // cookie or localStorage
 }
 
 export interface WordpressApiError {

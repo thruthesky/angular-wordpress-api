@@ -10,6 +10,7 @@ import {
 } from './wordpress-api.interface';
 import { of, Observable } from 'rxjs';
 import { ConfigToken } from './wordpress-api.config';
+import { CookieService, CookieOptions } from 'ngx-cookie';
 
 
 
@@ -20,7 +21,8 @@ export class WordpressApiService {
 
   constructor(
     @Inject(ConfigToken) private config: WordpressApiConfig,
-    private http: HttpClient
+    private http: HttpClient,
+    private cookie: CookieService
   ) {
     console.log('WordpressApiConfig: config: ', this.config);
     this.doInit();
@@ -189,7 +191,7 @@ export class WordpressApiService {
       console.log('(c) Already got getSystemSettings. return cached data');
       return of(this.getCache(k));
     }
-    return this.http.get<SystemSettings>(this.urlSonubApi + '/system-settings', this.loginAuth).pipe(
+    return <any>this.get(this.urlSonubApi + '/system-settings').pipe(
       tap(data => {
         console.log('(l) Got system settings from server: ', data);
         this.setCache(k, data);
@@ -242,15 +244,64 @@ export class WordpressApiService {
     );
   }
   /**
-   *
+   * Saves user data into cookie or localStorage
    * @param user UserData
    */
   private saveUserData(user: UserResponse) {
-    localStorage.setItem('user_id', user.id.toString());
-    localStorage.setItem('user_security_code', user.security_code);
-    localStorage.setItem('user_email', user.email);
-    localStorage.setItem('user_username', user.username);
-    localStorage.setItem('user_nickname', user.nickname);
+    if (this.config.sessionStorage === 'cookie') {
+      const d = new Date();
+      const options: CookieOptions = {
+        domain: this.currentRootDomain(), // current root domain
+        expires: new Date(d.getFullYear() + 1, d.getMonth()) // 1 year
+      };
+      this.cookie.put('user_id', user.id.toString(), options);
+      this.cookie.put('user_security_code', user.security_code, options);
+      this.cookie.put('user_email', user.email, options);
+      this.cookie.put('user_username', user.username, options);
+      this.cookie.put('user_nickname', user.nickname, options);
+    } else {
+      localStorage.setItem('user_id', user.id.toString());
+      localStorage.setItem('user_security_code', user.security_code);
+      localStorage.setItem('user_email', user.email);
+      localStorage.setItem('user_username', user.username);
+      localStorage.setItem('user_nickname', user.nickname);
+    }
+  }
+
+  /**
+   * Returns current root domain based on hostname
+   */
+  currentRootDomain(): string {
+    return this.rootDomain(location.hostname);
+  }
+  /**
+   * Returns root domain only like
+   * @example
+   *    'abc.com' from 'www.abc.com'
+   *    'abc.co.kr' from 'www.abc.co.kr' or 'sub.abc.co.kr'
+   *
+   * @param domain domain including subdomain
+   */
+  rootDomain(domain: string) {
+    const splitArr = domain.split('.');
+    const arrLen = splitArr.length;
+
+    // Extracting the root domain here if there is a subdomain
+
+    // If there are more than 3 parts of domain like below
+    // 'www'.'abc'.'com'
+    // 'www'.'abc'.'co'.'kr'
+    if (arrLen > 2) {
+      // Get the last two parts (always)
+      domain = splitArr[arrLen - 2] + '.' + splitArr[arrLen - 1];
+      // Check to see if it's using a Country Code Top Level Domain (ccTLD) (i.e. ".co.kr")
+      // Then get 3rd part as root domain
+      if (splitArr[arrLen - 2].length === 2 && splitArr[arrLen - 1].length === 2) {
+        // This is using a ccTLD
+        domain = splitArr[arrLen - 3] + '.' + domain;
+      }
+    }
+    return domain;
   }
 
 
@@ -264,7 +315,21 @@ export class WordpressApiService {
   }
 
   logout() {
+    const d = new Date();
+    const options: CookieOptions = {
+      domain: this.currentRootDomain(),
+      expires: new Date(d.getFullYear() - 1, d.getMonth())
+    };
+    this.cookie.remove('user_id', options);
+    this.cookie.remove('user_security_code', options);
+    this.cookie.remove('user_email', options);
+    this.cookie.remove('user_username', options);
+    this.cookie.remove('user_nickname', options);
     localStorage.removeItem('user_id');
+    localStorage.removeItem('user_security_code');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_username');
+    localStorage.removeItem('user_nickname');
   }
   get isLogged() {
     return !!this.myId;
@@ -275,7 +340,11 @@ export class WordpressApiService {
    * @param key key sring like 'id', 'email', 'security_code', 'username'
    */
   private getUserData(key) {
-    return localStorage.getItem('user_' + key);
+    if (this.config.sessionStorage === 'cookie') {
+      return this.cookie.get('user_' + key);
+    } else {
+      return localStorage.getItem('user_' + key);
+    }
   }
   get myId() {
     return this.getUserData('id');

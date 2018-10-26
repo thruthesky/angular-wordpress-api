@@ -8,6 +8,11 @@ Angular Wordpress Rest Api Extended for Sonub
   And this is a waste.
 * So, DI only one time on app service or root service and share it to sub mdoules and pages.
 
+## Dependencies
+
+* ngx-cookie
+
+
 ## Testing
 
 ```` ts
