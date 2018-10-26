@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpHeaders, HttpClient } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
+import { HttpHeaders, HttpClient, HttpParams, HttpEvent } from '@angular/common/http';
+import { tap, catchError } from 'rxjs/operators';
 import {
   WordpressApiConfig, UserCreate, UserResponse, UserUpdate, PostCreate,
   WordpressApiError, Categories, Post, Posts, SystemSettings,
@@ -31,12 +31,27 @@ export class WordpressApiService {
     this.systemSettings().subscribe(res => res, e => console.error(e));
   }
 
+  /**
+   * Returns true if the error is equal to the error code.
+   * @param e WordpresApiError
+   * @param errorCode error code to compare
+   */
+  is(e: WordpressApiError, errorCode: string) {
+    return e && e.code && e.code === errorCode;
+  }
 
   /**
-   * Returns Error object.
+   * Returns true if the input object is an error of HttpClient coming from Backend.
    * @param e 400 (Bad Request) from Wordpress
+   *    'e' has a raw http error response from HttpClient.
+   *    {
+   *      error: { code: ... , message: ... },
+   *      message: ...,
+   *      HttpErrorResponse: ...,
+   *      ... and much more
+   *    }
    */
-  isError(e) {
+  isBackendRawError(e) {
     if (e && e.error && e.error.code) {
       return true;
     } else {
@@ -44,11 +59,15 @@ export class WordpressApiService {
     }
   }
 
+  /**
+   * Returns { code: ..., message: .... } Object from Raw Http Error Response
+   * @param e raw http error response
+   */
   getError(e): WordpressApiError {
-    if (this.isError(e)) {
+    if (this.isBackendRawError(e)) {
       return { code: e.error.code, message: e.error.message };
     } else {
-      return null;
+      return { code: 'not_wordpress_error', message: 'This does look like backend error' };
     }
   }
 
@@ -98,6 +117,59 @@ export class WordpressApiService {
       })
     };
     return httpOptions;
+  }
+
+  /**
+   * This is a wrapper of post which constrcuts a POST request to Wordpress Backend server.
+   * @desc The reason for this method is to capture all the request and response for easy use.
+   * @param url url
+   * @param body body as json
+   * @param options http options
+   */
+  public post<T>(url: string, json: any | null, options?: {
+    headers?: HttpHeaders | {
+      [header: string]: string | string[];
+    };
+    observe?: 'body';
+    params?: HttpParams | {
+      [param: string]: string | string[];
+    };
+    reportProgress?: boolean;
+    responseType?: 'json';
+    withCredentials?: boolean;
+  }): Observable<T> {
+    return this.http.post<T>(url, json, options);
+  }
+  /**
+   * This is a wrapper of HttpClient.get() to capture all the request and response for easy use.
+   * @param url url
+   * @param options http options
+   */
+  public get<T>(url: string, options?: {
+    headers?: HttpHeaders | {
+      [header: string]: string | string[];
+    };
+    observe: 'events';
+    params?: HttpParams | {
+      [param: string]: string | string[];
+    };
+    reportProgress?: boolean;
+    responseType?: 'json';
+    withCredentials?: boolean;
+  }): Observable<HttpEvent<T>> {
+    console.log('url:', url);
+    return this.http.get<T>(url, options).pipe(
+      catchError(e => {
+        console.log('Got error on get()', e);
+        const we = this.getError(e);
+        console.log('we: ', we);
+        throw we;
+      })
+    );
+  }
+
+  version(): Observable<string> {
+    return <any>this.get(this.urlSonubApi + '/version');
   }
 
   /**
@@ -161,11 +233,11 @@ export class WordpressApiService {
    *    If the user didn't logged yet and want to login, you can call this mehtod with email & password auth.
    *    After getting user profile, you can use security code to continue access wordpress rest api.
    */
-  profile(auth?) {
+  profile(auth?): Observable<UserResponse> {
     if (!auth) {
       auth = this.loginAuth;
     }
-    return this.http.get<UserResponse>(this.urlSonubApi + '/profile', auth).pipe(
+    return <any>this.get(this.urlSonubApi + '/profile', auth).pipe(
       tap(data => this.saveUserData(<any>data))
     );
   }
@@ -260,7 +332,7 @@ export class WordpressApiService {
   }
 
   site(idx_site): Observable<Site> {
-    return this.http.post<Site>(this.urlSonubApi + '/site', {idx_site: idx_site}, this.loginAuth);
+    return this.http.post<Site>(this.urlSonubApi + '/site', { idx_site: idx_site }, this.loginAuth);
   }
 
 
@@ -276,7 +348,7 @@ export class WordpressApiService {
     return this.http.post<DomainAdd>(this.urlSonubApi + '/add-domain', data, this.loginAuth);
   }
   deleteDomain(idx_domain: string): Observable<Site> {
-    return this.http.post<Site>(this.urlSonubApi + '/delete-domain', {idx_domain: idx_domain}, this.loginAuth);
+    return this.http.post<Site>(this.urlSonubApi + '/delete-domain', { idx_domain: idx_domain }, this.loginAuth);
   }
 
 }

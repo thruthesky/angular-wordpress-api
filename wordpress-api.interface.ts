@@ -1,5 +1,8 @@
 
 
+export const INVALID_EMAIL = 'invalid_email';
+export const INVALID_USERNAME = 'invalid_username';
+
 export interface UserCreate {
     username: string; // Login name for the user. Required: 1
     name?: string; // 	Display name for the user.
