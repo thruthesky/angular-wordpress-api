@@ -416,8 +416,8 @@ export class WordpressApiService {
   addDomain(data: DomainAdd): Observable<DomainAdd> {
     return this.http.post<DomainAdd>(this.urlSonubApi + '/add-domain', data, this.loginAuth);
   }
-  deleteDomain(idx_domain: string): Observable<Site> {
-    return this.http.post<Site>(this.urlSonubApi + '/delete-domain', { idx_domain: idx_domain }, this.loginAuth);
+  deleteDomain(domain: string): Observable<Site> {
+    return this.http.post<Site>(this.urlSonubApi + '/delete-domain', { domain: domain }, this.loginAuth);
   }
 
 }

@@ -149,11 +149,16 @@ export interface SystemSettings {
 }
 
 
+export interface Domain {
+    domain: string;
+    reason: string;
+    status: string;
+}
 
 export interface Site {
     idx?: string;
     domain?: string;            // Needed to create a site.
-    domains?: Array<string>;    // Avaiable on response
+    domains?: Array<Domain>;    // Avaiable on response
     name?: string;
     description?: string;
     keywords?: string;
