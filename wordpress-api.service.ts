@@ -8,7 +8,7 @@ import {
   Sites,
   DomainAdd
 } from './wordpress-api.interface';
-import { of, Observable } from 'rxjs';
+import { of, Observable, BehaviorSubject } from 'rxjs';
 import { ConfigToken } from './wordpress-api.config';
 import { CookieService, CookieOptions } from 'ngx-cookie';
 
@@ -17,7 +17,7 @@ import { CookieService, CookieOptions } from 'ngx-cookie';
 @Injectable()
 export class WordpressApiService {
 
-  static cache = {};
+  static memoryCache = {};
 
   constructor(
     @Inject(ConfigToken) private config: WordpressApiConfig,
@@ -30,7 +30,6 @@ export class WordpressApiService {
 
   doInit() {
     console.log('WordpressApiService::doInit()');
-    this.systemSettings().subscribe(res => res, e => console.error(e));
   }
 
   /**
@@ -184,25 +183,63 @@ export class WordpressApiService {
    * @desc since it caches on memory, you can call as many times as you want.
    *    It will response with data from memory.
    *
-   * @example
-       this.systemSettings().subscribe(res => res, e => console.error(e));
-        setTimeout(() => {
-          this.systemSettings().subscribe(res => res, e => console.error(e));
-        }, 1000);
+   * @desc This method gets data from backend server only one time of the app life cyle.
+   *    And if it is invoked again, then it simply return data in memory.
+   *    Meaning, if though you change domain, it will not affected. It will only return the first domain settgins.
+   *
+   * @example test code
+   *
+        this.wp.systemSettings().subscribe(res => res, e => console.error(e));
+        setTimeout(() => {this.wp.systemSettings().subscribe(res => res, e => console.error(e));}, 1000);
    * @example this.a.wp.systemSettings().subscribe(s => this.settings = s);
+   * @example use case for normal use. Site may need to get site settings as quickly as it can so it can display the theme quickly.
+   *  this.wp.systemSettings({ domain: this.wp.currentDomain(), cache: true }).subscribe(res => res,
+   *      e => console.error(e));
    */
-  systemSettings(): Observable<SystemSettings> {
+  systemSettings(options: { domain?: string; cache?: boolean } = { domain: 'root', cache: true }): Observable<SystemSettings> {
+
+    /**
+     * Returns from memory if cache data exists in memory and return. no other operation.
+     */
     const k = 'systemSettings';
-    if (this.getCache(k)) {
-      console.log('(c) Already got getSystemSettings. return cached data');
-      return of(this.getCache(k));
+    const memoryData = this.getCache(k);
+    if (memoryData) {
+      console.log('systemSettings() return data from memory: ', memoryData);
+      return of(memoryData);
     }
-    return <any>this.get(this.urlSonubApi + '/system-settings').pipe(
+
+
+
+
+    /**
+     * Use localStorage data if exists and then load it from backend.
+     */
+    let cachedData = null;
+    if (options.cache) {
+      cachedData = this.getLocalStorage(options.domain); // get cached data
+    }
+    const subject = new BehaviorSubject(cachedData); // create observable
+
+    /**
+     * Returns from backend
+     */
+    this.get(this.urlSonubApi + `/system-settings?domain=$domain`).pipe(
       tap(data => {
-        console.log('(l) Got system settings from server: ', data);
+        console.log('systemSettings() return data from backend : ', data);
         this.setCache(k, data);
+        this.setLocalStorage( options.domain, data);
       })
-    );
+    ).subscribe(res => subject.next(res));
+
+
+    /**
+     * If cache exists in localStroage, use it.
+     */
+    if (options.cache) {
+      const re = localStorage.getItem(options.domain); // 캐시한 데이터를 읽음
+      console.log(`systemSettings() return data from localStorage: for (${options.domain})`, re);
+    }
+    return <any>subject;
   }
 
   /**
@@ -274,6 +311,13 @@ export class WordpressApiService {
     }
   }
 
+
+  /**
+   * Returns current host name.
+   */
+  currentDomain(): string {
+    return location.hostname;
+  }
   /**
    * Returns current root domain based on hostname
    */
@@ -371,15 +415,31 @@ export class WordpressApiService {
   }
 
   getCache(code) {
-    if (WordpressApiService.cache[code]) {
-      return WordpressApiService.cache[code];
+    if (WordpressApiService.memoryCache[code]) {
+      return WordpressApiService.memoryCache[code];
     } else {
       return null;
     }
   }
 
   setCache(code, data) {
-    WordpressApiService.cache[code] = data;
+    WordpressApiService.memoryCache[code] = data;
+  }
+
+  getLocalStorage(key) {
+    let data = localStorage.getItem(key);
+    if (data) {
+      try {
+        data = JSON.parse(data);
+      } catch (e) {
+        alert(`JSON.parse(${key}) error. Please report this to admin as soon as possible.`);
+      }
+
+    }
+    return data;
+  }
+  setLocalStorage(key, obj) {
+    localStorage.setItem(key, JSON.stringify(obj));
   }
 
   /**
