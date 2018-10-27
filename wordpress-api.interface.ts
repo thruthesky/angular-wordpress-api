@@ -143,9 +143,10 @@ export type Categories = Array<Category>;
 
 
 export interface SystemSettings {
-    max_sites: number;
-    max_domains: number;
-    categories: Categories;
+    default_domains?: Array<string>;
+    max_sites?: number;
+    max_domains?: number;
+    categories?: Categories;
 }
 
 

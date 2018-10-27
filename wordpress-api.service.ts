@@ -66,11 +66,19 @@ export class WordpressApiService {
    * @param e raw http error response
    */
   getError(e): WordpressApiError {
+    console.log('getError', e);
+    if (!e) {
+      return { code: 'falsy_error', message: `Error message is falsy. Meaning error object is emtpy.` };
+    }
+    if (e.name && e.name === 'HttpErrorResponse' && e.status !== void 0 && e.status === 0) {
+      return { code: 'server_down_or_no_internet', message: `Check if you have internet. Or somehow you cannot connect to server.` };
+    }
     if (this.isBackendRawError(e)) {
       return { code: e.error.code, message: e.error.message };
-    } else {
-      return { code: 'not_wordpress_error', message: 'This does look like backend error' };
     }
+
+    return { code: 'unknown_error', message: 'This does look like an error object' };
+
   }
 
   // get config(): WordpressApiConfig { return WordpressApiService.config; }
@@ -140,7 +148,9 @@ export class WordpressApiService {
     responseType?: 'json';
     withCredentials?: boolean;
   }): Observable<T> {
-    return this.http.post<T>(url, json, options);
+    return this.http.post<T>(url, json, options).pipe(
+      catchError(e => { throw this.getError(e); })
+    );
   }
   /**
    * This is a wrapper of HttpClient.get() to capture all the request and response for easy use.
@@ -161,12 +171,7 @@ export class WordpressApiService {
   }): Observable<HttpEvent<T>> {
     console.log('url:', url);
     return this.http.get<T>(url, options).pipe(
-      catchError(e => {
-        console.log('Got error on get()', e);
-        const we = this.getError(e);
-        console.log('we: ', we);
-        throw we;
-      })
+      catchError(e => { throw this.getError(e); })
     );
   }
 
@@ -184,6 +189,7 @@ export class WordpressApiService {
         setTimeout(() => {
           this.systemSettings().subscribe(res => res, e => console.error(e));
         }, 1000);
+   * @example this.a.wp.systemSettings().subscribe(s => this.settings = s);
    */
   systemSettings(): Observable<SystemSettings> {
     const k = 'systemSettings';
