@@ -171,6 +171,7 @@ export interface Sites {
     max_sites: number;
     available_domains: number;
     available_sites: number;
+    no_of_domains_in_progress: number;
     sites: Array<Site>;
 }
 
