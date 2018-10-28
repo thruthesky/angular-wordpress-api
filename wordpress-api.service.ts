@@ -180,6 +180,9 @@ export class WordpressApiService {
 
   /**
    * Gets system settings from live server or from cached memory data.
+   *
+   * @param options options
+   *    If options['cache'] is set to false, then it gets data from backend again.
    * @desc since it caches on memory, you can call as many times as you want.
    *    It will response with data from memory.
    *
@@ -202,19 +205,23 @@ export class WordpressApiService {
    *    ; If root site like 'localhost', 'www.sonub.com' has no site settings, still system settings will be saved as cache
    *    ; and will be used on next app booting.
    *    this.wp.systemSettings({ domain: this.wp.currentDomain(), cache: true }).subscribe(...)
+   * @example reload settings from backend.
+   *    ; use this after change the site settings.
+   *    wp.systemSettings({ domain: this.wp.currentDomain(), cache: false })
    */
   systemSettings(options: { domain?: string; cache?: boolean } = { domain: '', cache: true }): Observable<SystemSettings> {
 
     /**
      * Returns from memory if cache data exists in memory and return. no other operation.
      */
-    const k = 'systemSettings';
-    const memoryData = this.getCache(k);
-    if (memoryData) {
-      console.log('systemSettings() return data from memory: ', memoryData);
-      return of(memoryData);
+      const k = 'systemSettings';
+    if (options.cache) {
+      const memoryData = this.getCache(k);
+      if (memoryData) {
+        console.log('systemSettings() return data from memory: ', memoryData);
+        return of(memoryData);
+      }
     }
-
 
 
 
@@ -234,7 +241,7 @@ export class WordpressApiService {
       tap(data => {
         console.log('systemSettings() return data from backend : ', data);
         this.setCache(k, data);
-        this.setLocalStorage( options.domain, data);
+        this.setLocalStorage(options.domain, data);
       })
     ).subscribe(res => subject.next(res));
 

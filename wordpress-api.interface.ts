@@ -142,11 +142,15 @@ export interface Category {
 export type Categories = Array<Category>;
 
 
+/**
+ * system settings;
+ */
 export interface SystemSettings {
     default_domains?: Array<string>;
     max_sites?: number;
     max_domains?: number;
     categories?: Categories;
+    site?: Site;
 }
 
 
@@ -160,7 +164,8 @@ export interface Site {
     idx?: string;
     domain?: string;            // Needed to create a site.
     domains?: Array<Domain>;    // Avaiable on response
-    name?: string;
+    name?: string;              // site name
+    author?: string;            // Blog poster/writer name. mostly blog owner's nickname.
     description?: string;
     keywords?: string;
 }
