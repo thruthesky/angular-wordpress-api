@@ -187,6 +187,8 @@ export class WordpressApiService {
    *    And if it is invoked again, then it simply return data in memory.
    *    Meaning, if though you change domain, it will not affected. It will only return the first domain settgins.
    *
+   * @desc settings in localStorage are saved in each domain.
+   *
    * @example test code
    *
         this.wp.systemSettings().subscribe(res => res, e => console.error(e));
@@ -195,8 +197,13 @@ export class WordpressApiService {
    * @example use case for normal use. Site may need to get site settings as quickly as it can so it can display the theme quickly.
    *  this.wp.systemSettings({ domain: this.wp.currentDomain(), cache: true }).subscribe(res => res,
    *      e => console.error(e));
+   *
+   * @example root site caching
+   *    ; If root site like 'localhost', 'www.sonub.com' has no site settings, still system settings will be saved as cache
+   *    ; and will be used on next app booting.
+   *    this.wp.systemSettings({ domain: this.wp.currentDomain(), cache: true }).subscribe(...)
    */
-  systemSettings(options: { domain?: string; cache?: boolean } = { domain: 'root', cache: true }): Observable<SystemSettings> {
+  systemSettings(options: { domain?: string; cache?: boolean } = { domain: '', cache: true }): Observable<SystemSettings> {
 
     /**
      * Returns from memory if cache data exists in memory and return. no other operation.
@@ -223,7 +230,7 @@ export class WordpressApiService {
     /**
      * Returns from backend
      */
-    this.get(this.urlSonubApi + `/system-settings?domain=$domain`).pipe(
+    this.get(this.urlSonubApi + `/system-settings?domain=${options.domain}`).pipe(
       tap(data => {
         console.log('systemSettings() return data from backend : ', data);
         this.setCache(k, data);
@@ -236,7 +243,7 @@ export class WordpressApiService {
      * If cache exists in localStroage, use it.
      */
     if (options.cache) {
-      const re = localStorage.getItem(options.domain); // 캐시한 데이터를 읽음
+      const re = this.getLocalStorage(options.domain); // 캐시한 데이터를 읽음
       console.log(`systemSettings() return data from localStorage: for (${options.domain})`, re);
     }
     return <any>subject;
