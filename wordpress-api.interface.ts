@@ -141,6 +141,12 @@ export interface Category {
 }
 export type Categories = Array<Category>;
 
+export interface ShortCategory {
+    id: string;
+    name: string;
+}
+export type ShortCategories = Array<ShortCategory>;
+
 
 /**
  * system settings;
@@ -168,6 +174,7 @@ export interface Site {
     author?: string;            // Blog poster/writer name. mostly blog owner's nickname.
     description?: string;
     keywords?: string;
+    categories?: ShortCategories;
 }
 
 

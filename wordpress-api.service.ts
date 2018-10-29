@@ -500,4 +500,10 @@ export class WordpressApiService {
     return this.http.post<Site>(this.urlSonubApi + '/delete-domain', { domain: domain }, this.loginAuth);
   }
 
+
+
+
+  createCategory(idx_site, category: string) {
+    return this.http.post<DomainAdd>(this.urlSonubApi + '/create-category', {idx_site: idx_site, category: category}, this.loginAuth);
+  }
 }
