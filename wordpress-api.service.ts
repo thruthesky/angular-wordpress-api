@@ -506,4 +506,7 @@ export class WordpressApiService {
   createCategory(idx_site, category: string) {
     return this.http.post<DomainAdd>(this.urlSonubApi + '/create-category', {idx_site: idx_site, category: category}, this.loginAuth);
   }
+  sortCategories(idx_site, orders: string) {
+    return this.http.post<DomainAdd>(this.urlSonubApi + '/sort-categories', {idx_site: idx_site, orders: orders}, this.loginAuth);
+  }
 }
