@@ -79,8 +79,38 @@ export interface PostCreate {
     meta?: string; // Meta fields.
     sticky?: string; // Whether or not the object should be treated as sticky.
     template?: string; // The theme file to use to display the object. One of:
-    categories?: Array<string>; // The terms assigned to the object in the category taxonomy.
+    categories?: string; // The terms assigned to the object in the category taxonomy.
     tags?: string; // The terms assigned to the object in the post_tag taxonomy.
+}
+
+
+export interface PostList {
+    context?: string;    // Scope under which the request is made; determines fields present in response.
+                        // Default: view
+                        // One of: view, embed, edit
+
+    page?: number;           // Current page of the collection. Default: 1
+    per_page?: number;       // Maximum number of items to be returned in result set. Default: 10
+    search?: string;         // Limit results to those matching a string.
+    after?: string;          // Limit response to posts published after a given ISO8601 compliant date.
+    author?: string;         // Limit result set to posts assigned to specific authors.
+    author_exclude?: string; // Ensure result set excludes posts assigned to specific authors.
+    before?: string;         // Limit response to posts published before a given ISO8601 compliant date.
+    exclude?: string;        // Ensure result set excludes specific IDs.
+    include?: string;        // Limit result set to specific IDs.
+    offset?: string;         // Offset the result set by a specific number of items.
+    order?: string;          // Order sort attribute ascending or descending. Default: desc. One of: asc, desc
+    orderby?: string;        // Sort collection by object attribute. Default: date
+                            // One of: author, date, id, include, modified, parent, relevance, slug, title
+    slug?: string;           // Limit result set to posts with one or more specific slugs.
+    status?: string;         // Limit result set to posts assigned one or more statuses. Default: publish
+    categories?: string;     // Limit result set to all items that have the specified term assigned in the categories taxonomy.
+                                // ex) "713,12"
+    categories_exclude?: string ;    // Limit result set to all items except those
+                                    // that have the specified term assigned in the categories taxonomy.
+    tags?: string;           // Limit result set to all items that have the specified term assigned in the tags taxonomy.
+    tags_exclude?: string;   // Limit result set to all items except those that have the specified term assigned in the tags taxonomy.
+    sticky?: string;         // Limit result set to items that are sticky.
 }
 
 export interface Post {
@@ -116,6 +146,8 @@ export interface Post {
 }
 export type Posts = Array<Post>;
 
+
+
 export interface WordpressApiConfig {
     url: string;
     sessionStorage: string; // cookie or localStorage
@@ -144,6 +176,7 @@ export type Categories = Array<Category>;
 export interface ShortCategory {
     id: string;
     name: string;
+    slug: string;
 }
 export type ShortCategories = Array<ShortCategory>;
 
@@ -193,10 +226,6 @@ export interface DomainAdd {
     idx_site: string;
     domain: string;
 }
-
-
-
-
 
 
 

@@ -6,7 +6,8 @@ import {
   WordpressApiError, Categories, Post, Posts, SystemSettings,
   Site,
   Sites,
-  DomainAdd
+  DomainAdd,
+  PostList
 } from './wordpress-api.interface';
 import { of, Observable, BehaviorSubject } from 'rxjs';
 import { ConfigToken } from './wordpress-api.config';
@@ -34,11 +35,20 @@ export class WordpressApiService {
 
   /**
    * Returns true if the error is equal to the error code.
-   * @param e WordpresApiError
+   * @param e WordpresApiError or Raw error from wordpress backend.
    * @param errorCode error code to compare
    */
   is(e: WordpressApiError, errorCode: string) {
-    return e && e.code && e.code === errorCode;
+    if (e && e.code && e.code === errorCode) {
+      return true;
+    }
+    if (this.isBackendRawError(e)) {
+      e = this.getErrorFromBackendRawError(e);
+      if (e && e.code && e.code === errorCode) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -64,7 +74,7 @@ export class WordpressApiService {
    * Returns { code: ..., message: .... } Object from Raw Http Error Response
    * @param e raw http error response
    */
-  getError(e): WordpressApiError {
+  getErrorFromBackendRawError(e): WordpressApiError {
     console.log('getError', e);
     if (!e) {
       return { code: 'falsy_error', message: `Error message is falsy. Meaning error object is emtpy.` };
@@ -148,7 +158,7 @@ export class WordpressApiService {
     withCredentials?: boolean;
   }): Observable<T> {
     return this.http.post<T>(url, json, options).pipe(
-      catchError(e => { throw this.getError(e); })
+      catchError(e => { throw this.getErrorFromBackendRawError(e); })
     );
   }
   /**
@@ -170,7 +180,7 @@ export class WordpressApiService {
   }): Observable<HttpEvent<T>> {
     console.log('url:', url);
     return this.http.get<T>(url, options).pipe(
-      catchError(e => { throw this.getError(e); })
+      catchError(e => { throw this.getErrorFromBackendRawError(e); })
     );
   }
 
@@ -214,7 +224,7 @@ export class WordpressApiService {
     /**
      * Returns from memory if cache data exists in memory and return. no other operation.
      */
-      const k = 'systemSettings';
+    const k = 'systemSettings';
     if (options.cache) {
       const memoryData = this.getCache(k);
       if (memoryData) {
@@ -421,11 +431,20 @@ export class WordpressApiService {
   }
 
 
+  /**
+   * It uses WP REST API
+   * @param post post data
+   */
   createPost(post: PostCreate) {
     return this.http.post<Post>(this.urlPosts, post, this.loginAuth);
   }
-  getPosts() {
-    return this.http.get<Posts>(this.urlPosts, this.loginAuth);
+  /**
+   * Get posts.
+   * It simple uses WP REST API.
+   */
+  getPosts(options: PostList) {
+    const url = this.urlPosts + '?' + this.httpBuildQuery(options);
+    return this.http.get<Posts>(url, this.loginAuth);
   }
 
   getCache(code) {
@@ -504,9 +523,69 @@ export class WordpressApiService {
 
 
   createCategory(idx_site, category: string) {
-    return this.http.post<DomainAdd>(this.urlSonubApi + '/create-category', {idx_site: idx_site, category: category}, this.loginAuth);
+    return this.http.post<DomainAdd>(this.urlSonubApi + '/create-category', { idx_site: idx_site, category: category }, this.loginAuth);
   }
   sortCategories(idx_site, orders: string) {
-    return this.http.post<DomainAdd>(this.urlSonubApi + '/sort-categories', {idx_site: idx_site, orders: orders}, this.loginAuth);
+    return this.http.post<DomainAdd>(this.urlSonubApi + '/sort-categories', { idx_site: idx_site, orders: orders }, this.loginAuth);
   }
+
+
+  /**
+   * Libraries
+   */
+
+  /**
+   * Returns http query string.
+   *
+   * @desc This method is not perfect. It is not developed for complicated query.
+   *
+   * @param params Object to build as http query string
+   * @return
+   *      - http query string
+   *      - Or null if the input is emtpy or not object.
+   */
+  httpBuildQuery(params): string | null {
+
+    if (this.isEmpty(params)) {
+      return null; //
+    }
+
+    const keys = Object.keys(params);
+    if (keys.length === 0) {
+      return null; //
+    }
+
+    const esc = encodeURIComponent;
+    const query = keys
+      .map(k => esc(k) + '=' + esc(params[k]))
+      .join('&');
+    return query;
+  }
+
+  /**
+   * Returns true if the input `what` is falsy or empty or no data.
+   * @returns true if the input `what` is
+   *          - falsy value.
+   *              -- boolean and it's false,
+   *              -- number with 0.
+   *              -- string with empty. ( if it has any vlaue like blank, then it's not empty. )
+   *              -- undefined.
+   *          - object with no key.
+   *          - array with 0 length.
+   *
+   *      - otherwise return false.
+   */
+  isEmpty(what): boolean {
+    if (!what) {
+      return true; // for number, string, boolean, any falsy.
+    }
+    if (typeof what === 'object') {
+      return Object.keys(what).length === 0;
+    }
+    if (Array.isArray(what)) {
+      return what.length === 0;
+    }
+    return false;
+  }
+
 }
