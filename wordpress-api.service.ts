@@ -7,7 +7,8 @@ import {
   Site,
   Sites,
   DomainAdd,
-  PostList
+  PostList,
+  CategoryCrud
 } from './wordpress-api.interface';
 import { of, Observable, BehaviorSubject } from 'rxjs';
 import { ConfigToken } from './wordpress-api.config';
@@ -505,31 +506,37 @@ export class WordpressApiService {
 
 
   createSite(data: Site): Observable<Site> {
-    return this.http.post<Site>(this.urlSonubApi + '/create-site', data, this.loginAuth);
+    return this.post<Site>(this.urlSonubApi + '/create-site', data, this.loginAuth);
   }
   updateSite(form: Site): Observable<Site> {
-    return this.http.post<Site>(this.urlSonubApi + '/update-site', form, this.loginAuth);
+    return this.post<Site>(this.urlSonubApi + '/update-site', form, this.loginAuth);
   }
 
 
   addDomain(data: DomainAdd): Observable<DomainAdd> {
-    return this.http.post<DomainAdd>(this.urlSonubApi + '/add-domain', data, this.loginAuth);
+    return this.post<DomainAdd>(this.urlSonubApi + '/add-domain', data, this.loginAuth);
   }
   deleteDomain(domain: string): Observable<Site> {
-    return this.http.post<Site>(this.urlSonubApi + '/delete-domain', { domain: domain }, this.loginAuth);
+    return this.post<Site>(this.urlSonubApi + '/delete-domain', { domain: domain }, this.loginAuth);
   }
 
 
 
 
-  createCategory(idx_site, category: string) {
-    return this.http.post<DomainAdd>(this.urlSonubApi + '/create-category', { idx_site: idx_site, category: category }, this.loginAuth);
+  createCategory(options: CategoryCrud): Observable<CategoryCrud> {
+    return this.post<CategoryCrud>(this.urlSonubApi + '/create-category', options, this.loginAuth);
   }
-  deleteCategory(term_id: string) {
-    return this.http.post(this.urlSonubApi + '/delete-category', { term_id: term_id }, this.loginAuth);
+
+  deleteCategory(term_id: string): Observable<CategoryCrud> {
+    return this.post(this.urlSonubApi + '/delete-category', { term_id: term_id }, this.loginAuth);
   }
+
+  renameCategory(options: CategoryCrud) {
+    return this.post(this.urlSonubApi + '/rename-category', options, this.loginAuth);
+  }
+
   sortCategories(idx_site, orders: string) {
-    return this.http.post<DomainAdd>(this.urlSonubApi + '/sort-categories', { idx_site: idx_site, orders: orders }, this.loginAuth);
+    return this.http.post(this.urlSonubApi + '/sort-categories', { idx_site: idx_site, orders: orders }, this.loginAuth);
   }
 
 

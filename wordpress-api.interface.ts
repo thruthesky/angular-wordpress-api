@@ -200,7 +200,7 @@ export interface Domain {
 }
 
 export interface Site {
-    idx?: string;
+    idx?: string;               // site.idx
     domain?: string;            // Needed to create a site.
     domains?: Array<Domain>;    // Avaiable on response
     name?: string;              // site name
@@ -208,7 +208,12 @@ export interface Site {
     description?: string;
     keywords?: string;
     categories?: ShortCategories;
+
+    // HTML for site head.
+    // @see https://docs.google.com/document/d/1nOEJVDilLbF0sNCkkRGcDwdT3rDLZp3h59oQ77BIdp4/edit#heading=h.bn3bu2qkurcu
+    head?: string;
 }
+
 
 
 
@@ -229,5 +234,13 @@ export interface DomainAdd {
 
 
 
+
+
+export interface CategoryCrud {
+    idx_site?: string;           // site.idx
+    name: string;               // category name
+    term_id?: string;           // available on response and used on rename
+    orders?: string;            // available only on reponse
+}
 
 
