@@ -174,7 +174,7 @@ export interface Category {
 export type Categories = Array<Category>;
 
 export interface ShortCategory {
-    id: string;
+    term_id: string;
     name: string;
     slug: string;
 }
