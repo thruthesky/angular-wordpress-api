@@ -1,6 +1,8 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpHeaders, HttpClient, HttpParams, HttpEvent } from '@angular/common/http';
-import { tap, catchError } from 'rxjs/operators';
+import {
+  HttpHeaders, HttpClient, HttpParams, HttpEvent, HttpRequest, HttpResponse, HttpHeaderResponse, HttpEventType
+} from '@angular/common/http';
+import { tap, catchError, map, filter } from 'rxjs/operators';
 import {
   WordpressApiConfig, UserCreate, UserResponse, UserUpdate, PostCreate,
   WordpressApiError, Categories, Post, Posts, SystemSettings,
@@ -8,9 +10,11 @@ import {
   Sites,
   DomainAdd,
   PostList,
-  CategoryCrud
+  CategoryCrud,
+  Attachment,
+  PostUpdate
 } from './wordpress-api.interface';
-import { of, Observable, BehaviorSubject } from 'rxjs';
+import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { ConfigToken } from './wordpress-api.config';
 import { CookieService, CookieOptions } from 'ngx-cookie';
 
@@ -96,6 +100,7 @@ export class WordpressApiService {
   get urlWordpressApiEndPoint(): string { return this.url + '/wp-json/wp/v2'; }
   get urlUsers(): string { return this.urlWordpressApiEndPoint + '/users'; }
   get urlPosts(): string { return this.urlWordpressApiEndPoint + '/posts'; }
+  get urlMedia(): string { return this.urlWordpressApiEndPoint + '/media'; }
   get urlCategories(): string { return this.urlWordpressApiEndPoint + '/categories'; }
   get urlSonubApi(): string { return this.url + '/wp-json/sonub/v2019'; }
 
@@ -131,12 +136,15 @@ export class WordpressApiService {
     user_pass: string;
   } = <any>{}) {
     const httpOptions = {
-      headers: new HttpHeaders({
-        'Authorization': 'Basic ' + btoa(`${options.user_login}:${options.user_pass}`),
-        'Content-Type': 'application/json'
-      })
+      headers: this.getHeaders(options)
     };
     return httpOptions;
+  }
+  private getHeaders(options) {
+    return new HttpHeaders({
+      'Authorization': 'Basic ' + btoa(`${options.user_login}:${options.user_pass}`),
+      'Content-Type': 'application/json'
+    });
   }
 
   /**
@@ -433,12 +441,24 @@ export class WordpressApiService {
 
 
   /**
+   * Creates a post.
    * It uses WP REST API
    * @param post post data
    */
   createPost(post: PostCreate) {
-    return this.http.post<Post>(this.urlPosts, post, this.loginAuth);
+    return this.post<Post>(this.urlPosts, post, this.loginAuth);
   }
+
+  /**
+   * Let user edit his own post.
+   * @desc User cannot edit other's post.
+   * @param post post data to edit
+   */
+  updatePost(post: PostUpdate) {
+    return this.post<Post>(this.urlPosts + `/${post.id}`, post, this.loginAuth);
+  }
+
+
   /**
    * Get posts.
    * It simple uses WP REST API.
@@ -447,7 +467,14 @@ export class WordpressApiService {
     const url = this.urlPosts + '?' + this.httpBuildQuery(options);
     return this.http.get<Posts>(url, this.loginAuth);
   }
+  getPost(id) {
+    return this.http.get<Post>(this.urlPosts + `/${id}`, this.loginAuth);
+  }
 
+  /**
+   * Get memory cached data.
+   * @param code code to get cached data.
+   */
   getCache(code) {
     if (WordpressApiService.memoryCache[code]) {
       return WordpressApiService.memoryCache[code];
@@ -501,7 +528,7 @@ export class WordpressApiService {
   }
 
   site(idx_site): Observable<Site> {
-    return this.http.post<Site>(this.urlSonubApi + '/site', { idx_site: idx_site }, this.loginAuth);
+    return this.post<Site>(this.urlSonubApi + '/site', { idx_site: idx_site }, this.loginAuth);
   }
 
 
@@ -536,7 +563,7 @@ export class WordpressApiService {
   }
 
   sortCategories(idx_site, orders: string) {
-    return this.http.post(this.urlSonubApi + '/sort-categories', { idx_site: idx_site, orders: orders }, this.loginAuth);
+    return this.post(this.urlSonubApi + '/sort-categories', { idx_site: idx_site, orders: orders }, this.loginAuth);
   }
 
 
@@ -597,5 +624,76 @@ export class WordpressApiService {
     }
     return false;
   }
+
+  /**
+   * Uploads a file using Custom API
+   * @desc I cannot understand wordpress Media API. so I impementing my own file upload api.
+   * @param files HTML FileList
+   * @param options Options to upload file
+   * @see https://docs.google.com/document/d/1nOEJVDilLbF0sNCkkRGcDwdT3rDLZp3h59oQ77BIdp4/edit#heading=h.8fvprdfjs0v5
+   */
+  fileUpload(files: FileList, options): Observable<Attachment> {
+    if (files === void 0 || !files.length || files[0] === void 0) {
+      return throwError(this.createError(-44, 'Select a file'));
+    }
+    const file = files[0];
+
+
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('post_parent', options['post_parent']);
+    formData.append('title', '');
+
+    const headers = new HttpHeaders({
+      'Authorization': 'Basic ' + btoa(`${this.myId}:${this.mySecurityCode}`)
+    });
+    const req = new HttpRequest('POST', this.urlSonubApi + '/file-upload', formData, {
+      headers: headers,
+      reportProgress: true,
+      responseType: 'json'
+    });
+
+    return this.http.request(req).pipe(
+      map(e => {
+        if (e instanceof HttpResponse) { // success event. upload finished.
+          console.log('e instanceof HttpResponse: ', e);
+          return e['body'];
+        } else if (e instanceof HttpHeaderResponse) { // header event. It may be a header part from the server response.
+          // don't return anything about header.
+          // return e;
+        } else if (e.type === HttpEventType.UploadProgress) { // progress event
+          const precentage = Math.round(100 * e.loaded / e.total);
+          if (isNaN(precentage)) {
+            // don't do here anything. this will never happens.
+            // console.log('file upload error. percentage is not number');
+            return <any>0;
+          } else {
+            // console.log('upload percentage: ', precentage);
+            return <any>precentage;
+          }
+        } else {
+          // don't return other events.
+          // return e; // other events
+        }
+      }),
+      filter(e => e)
+    );
+
+  }
+
+  /**
+   * Delete a file.
+   * @param post_id file id. wp_posts.ID
+   */
+  fileDelete(post_id): Observable<{ id: string }> {
+    return this.post(this.urlSonubApi + '/file-delete', { post_id: post_id }, this.loginAuth);
+  }
+
+
+
+  createError(code, message) {
+    return { code: code, message: message };
+  }
+
 
 }

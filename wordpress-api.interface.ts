@@ -3,6 +3,8 @@
 export const INVALID_EMAIL = 'invalid_email';
 export const INVALID_USERNAME = 'invalid_username';
 export const INCORRECT_PASSWORD = 'incorrect_password';
+export const NO_FILE_SELECTED = 'no_file_selected';
+
 
 
 export interface UserCreate {
@@ -81,7 +83,17 @@ export interface PostCreate {
     template?: string; // The theme file to use to display the object. One of:
     categories?: string; // The terms assigned to the object in the category taxonomy.
     tags?: string; // The terms assigned to the object in the post_tag taxonomy.
+
+    files: Array<string>;       // Hack for WP REST API. This is file id ( wp_posts.ID ) to connect uploaded files to the post.
 }
+
+export interface PostUpdate {
+    id: string; // post ID to edit
+    title: string; //
+    content: string; //
+    files: Array<string>;
+}
+
 
 
 export interface PostList {
@@ -113,38 +125,6 @@ export interface PostList {
     sticky?: string;         // Limit result set to items that are sticky.
 }
 
-export interface Post {
-    id: number;
-    date: string;
-    date_gmt: string;
-    guid: string;
-    modified: string;
-    modified_gmt: string;
-    slug: string;
-    status: string;
-    type: string;
-    link: string;
-    title: {
-        rendered: string;
-    };
-    content: {
-        rendered: string;
-    };
-    excerpt: string;
-    protected: boolean;
-    author: number;
-    featured_media: number;
-    comment_status: string;
-    ping_status: string;
-    sticky: boolean;
-    template: string;
-    format: string;
-    meta: Array<any>;
-    categories: Array<number>;
-    tags: Array<string>;
-    _links: any;
-}
-export type Posts = Array<Post>;
 
 
 
@@ -244,3 +224,52 @@ export interface CategoryCrud {
 }
 
 
+export interface Attachment {
+    guid: string; // url
+    thumbnail_url: string; // only avaialable if media type is image.
+    id: string; // id of uploaded file. wp_posts.ID
+    // status: string; //
+    // author: string; // author ID
+    // type: string; // post type
+    media_type: 'file' | 'image';
+    mime_type: string; // mime type i.e) 'image/jpeg'.
+    name: string; // uploaded file name
+    // post: string; // The ID for the associated post of the attachment.
+}
+
+
+
+
+
+/**
+ * Customized to reduce the size
+ */
+export interface Post {
+    id: number;
+    date: string;
+    // date_gmt: string;
+    guid: string;
+    modified: string;
+    // modified_gmt: string;
+    // slug: string;
+    // status: string;
+    // type: string;
+    // link: string;
+    title: string;
+    content: string;
+    // excerpt: string;
+    // protected: boolean;
+    author: number;
+    // featured_media: number;
+    // comment_status: string;
+    // ping_status: string;
+    // sticky: boolean;
+    // template: string;
+    // format: string;
+    meta: Array<any>;
+    categories: Array<number>;
+    // tags: Array<string>;
+    files: Array<Attachment>;
+    _links: any;
+}
+export type Posts = Array<Post>;
