@@ -458,6 +458,14 @@ export class WordpressApiService {
     return this.post<Post>(this.urlPosts + `/${post.id}`, post, this.loginAuth);
   }
 
+  /**
+   * Deletes a post.
+   * @desc it uses custom API for delete child posts like attachment.
+   * @param post_id post id
+   */
+  deletePost(post_id: string) {
+    return this.post(this.urlSonubApi + '/post-delete', { post_id: post_id }, this.loginAuth);
+  }
 
   /**
    * Get posts.

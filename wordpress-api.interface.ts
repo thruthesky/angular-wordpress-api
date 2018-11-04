@@ -245,13 +245,13 @@ export interface Attachment {
  * Customized to reduce the size
  */
 export interface Post {
-    id: number;
+    id: string;
     date: string;
     // date_gmt: string;
     guid: string;
     modified: string;
     // modified_gmt: string;
-    // slug: string;
+    slug: string;
     // status: string;
     // type: string;
     // link: string;
@@ -259,7 +259,7 @@ export interface Post {
     content: string;
     // excerpt: string;
     // protected: boolean;
-    author: number;
+    author: string;
     // featured_media: number;
     // comment_status: string;
     // ping_status: string;
@@ -271,5 +271,7 @@ export interface Post {
     // tags: Array<string>;
     files: Array<Attachment>;
     _links: any;
+
+    view: boolean; // avaialabe only on client.
 }
 export type Posts = Array<Post>;
