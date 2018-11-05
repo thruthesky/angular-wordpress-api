@@ -700,11 +700,11 @@ export class WordpressApiService {
   updateComment(comment: Comment): Observable<Comment> {
     return this.post(this.urlSonubApi + '/update-comment', comment, this.loginAuth);
   }
-  /**
-   * @param comment_ID comment ID to delete
-   */
-  deleteComment(comment_ID: string) {
-    return this.post(this.urlSonubApi + '/delete-comment', {comment_ID: comment_ID}, this.loginAuth);
-  }
+/**
+ * @param comment_ID comment ID to delete
+ */
+deleteComment(comment_ID: string) {
+  return this.post(this.urlSonubApi + '/delete-comment', { comment_ID: comment_ID }, this.loginAuth);
+}
 
 }

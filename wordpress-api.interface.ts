@@ -84,14 +84,14 @@ export interface PostCreate {
     categories?: string; // The terms assigned to the object in the category taxonomy.
     tags?: string; // The terms assigned to the object in the post_tag taxonomy.
 
-    files: Array<string>;       // Hack for WP REST API. This is file id ( wp_posts.ID ) to connect uploaded files to the post.
+    files_ID: Array<string>;       // Hack for WP REST API. This is file id ( wp_posts.ID ) to connect uploaded files to the post.
 }
 
 export interface PostUpdate {
     id: string; // post ID to edit
     title: string; //
     content: string; //
-    files: Array<string>;
+    files_ID: Array<string>;
 }
 
 
@@ -240,6 +240,7 @@ export interface Attachment {
 
 
 
+
 export interface Comment {
     comment_ID?: string;        // update only
     comment_post_ID: string;            // post ID that the comment belongs to.
@@ -250,7 +251,8 @@ export interface Comment {
     readonly user_id?: string;           // user id of the author
     depth?: string;
     show: '' | 'edit' | 'reply';    // client only. show reply/edit box
-    files: Array<string> | Array<Attachment>;
+    files?: Array<Attachment>;           // only avaiable from backend.
+    files_ID?: Array<string>;            // files ID to save
 }
 
 
