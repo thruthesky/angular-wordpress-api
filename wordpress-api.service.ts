@@ -176,18 +176,7 @@ export class WordpressApiService {
    * @param url url
    * @param options http options
    */
-  public get<T>(url: string, options?: {
-    headers?: HttpHeaders | {
-      [header: string]: string | string[];
-    };
-    observe: 'events';
-    params?: HttpParams | {
-      [param: string]: string | string[];
-    };
-    reportProgress?: boolean;
-    responseType?: 'json';
-    withCredentials?: boolean;
-  }): Observable<HttpEvent<T>> {
+  public get<T>(url: string, options?): Observable<HttpEvent<T>> {
     console.log('url:', url);
     return this.http.get<T>(url, options).pipe(
       catchError(e => { throw this.getErrorFromBackendRawError(e); })

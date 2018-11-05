@@ -250,6 +250,7 @@ export interface Comment {
     readonly user_id?: string;           // user id of the author
     depth?: string;
     show: '' | 'edit' | 'reply';    // client only. show reply/edit box
+    files: Array<string> | Array<Attachment>;
 }
 
 
