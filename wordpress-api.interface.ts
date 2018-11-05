@@ -249,6 +249,7 @@ export interface Comment {
     comment_content: string;
     readonly user_id?: string;           // user id of the author
     depth?: string;
+    show: '' | 'edit' | 'reply';    // client only. show reply/edit box
 }
 
 
