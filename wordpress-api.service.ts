@@ -12,7 +12,8 @@ import {
   PostList,
   CategoryCrud,
   Attachment,
-  PostUpdate
+  PostUpdate,
+  Comment
 } from './wordpress-api.interface';
 import { of, Observable, BehaviorSubject, throwError } from 'rxjs';
 import { ConfigToken } from './wordpress-api.config';
@@ -703,5 +704,15 @@ export class WordpressApiService {
     return { code: code, message: message };
   }
 
+
+  createComment(comment: Comment): Observable<Comment> {
+    return this.post(this.urlSonubApi + '/create-comment', comment, this.loginAuth);
+  }
+  updateComment() {
+
+  }
+  deleteComment() {
+
+  }
 
 }

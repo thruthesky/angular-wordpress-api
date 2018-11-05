@@ -240,6 +240,17 @@ export interface Attachment {
 
 
 
+export interface Comment {
+    comment_ID?: string;        // update only
+    comment_post_ID: string;            // post ID that the comment belongs to.
+    comment_parent?: string;            // comment parent ID
+    readonly comment_author?: string;
+    comment_date?: string;
+    comment_content: string;
+    readonly user_id?: string;           // user id of the author
+    depth?: string;
+}
+
 
 /**
  * Customized to reduce the size
@@ -273,5 +284,8 @@ export interface Post {
     _links: any;
 
     view: boolean; // avaialabe only on client.
+
+    comments: Array<Comment>; // comments.
 }
 export type Posts = Array<Post>;
+
