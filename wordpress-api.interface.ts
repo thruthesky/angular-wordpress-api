@@ -98,8 +98,8 @@ export interface PostUpdate {
 
 export interface PostList {
     context?: string;    // Scope under which the request is made; determines fields present in response.
-                        // Default: view
-                        // One of: view, embed, edit
+    // Default: view
+    // One of: view, embed, edit
 
     page?: number;           // Current page of the collection. Default: 1
     per_page?: number;       // Maximum number of items to be returned in result set. Default: 10
@@ -113,13 +113,13 @@ export interface PostList {
     offset?: string;         // Offset the result set by a specific number of items.
     order?: string;          // Order sort attribute ascending or descending. Default: desc. One of: asc, desc
     orderby?: string;        // Sort collection by object attribute. Default: date
-                            // One of: author, date, id, include, modified, parent, relevance, slug, title
+    // One of: author, date, id, include, modified, parent, relevance, slug, title
     slug?: string;           // Limit result set to posts with one or more specific slugs.
     status?: string;         // Limit result set to posts assigned one or more statuses. Default: publish
     categories?: string;     // Limit result set to all items that have the specified term assigned in the categories taxonomy.
-                                // ex) "713,12"
-    categories_exclude?: string ;    // Limit result set to all items except those
-                                    // that have the specified term assigned in the categories taxonomy.
+    // ex) "713,12"
+    categories_exclude?: string;    // Limit result set to all items except those
+    // that have the specified term assigned in the categories taxonomy.
     tags?: string;           // Limit result set to all items that have the specified term assigned in the tags taxonomy.
     tags_exclude?: string;   // Limit result set to all items except those that have the specified term assigned in the tags taxonomy.
     sticky?: string;         // Limit result set to items that are sticky.
@@ -192,6 +192,9 @@ export interface Site {
     // HTML for site head.
     // @see https://docs.google.com/document/d/1nOEJVDilLbF0sNCkkRGcDwdT3rDLZp3h59oQ77BIdp4/edit#heading=h.bn3bu2qkurcu
     head?: string;
+
+    //
+    favicon_url?: string;        // favicon url
 }
 
 
