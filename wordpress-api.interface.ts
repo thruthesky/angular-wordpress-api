@@ -84,6 +84,7 @@ export interface PostCreate {
     categories?: string; // The terms assigned to the object in the category taxonomy.
     tags?: string; // The terms assigned to the object in the post_tag taxonomy.
 
+    files: Array<Attachment>;       //
     files_ID: Array<string>;       // Hack for WP REST API. This is file id ( wp_posts.ID ) to connect uploaded files to the post.
 }
 
