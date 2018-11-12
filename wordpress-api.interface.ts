@@ -180,6 +180,7 @@ export interface Domain {
     status: string;
 }
 
+
 export interface Site {
     idx?: string;               // site.idx
     domain?: string;            // Needed to create a site.
@@ -196,7 +197,20 @@ export interface Site {
 
     //
     favicon_url?: string;        // favicon url
+    app_name?: string;
+    app_short_name?: string;
+    app_theme_color?: string;
+    app_icon_url?: string;      //
+    app_icon_url_72x72?: string;            //
+    app_icon_url_96x96?: string;            //
+    app_icon_url_128x128?: string;          //
+    app_icon_url_144x144?: string;          //
+    app_icon_url_152x152?: string;          //
+    app_icon_url_192x192?: string;          //
+    app_icon_url_384x384?: string;          //
+    app_icon_url_512x512?: string;          //
 }
+
 
 
 
