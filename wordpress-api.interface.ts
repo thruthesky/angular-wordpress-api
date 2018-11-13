@@ -308,6 +308,7 @@ export interface Post {
     view: boolean; // avaialabe only on client.
 
     comments: Array<Comment>; // comments.
+    viewPostComments: boolean;      // client only
 }
 export type Posts = Array<Post>;
 
