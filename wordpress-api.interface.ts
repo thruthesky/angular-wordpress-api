@@ -201,15 +201,16 @@ export interface Site {
     app_short_name?: string;
     app_theme_color?: string;
     app_icon_url?: string;      //
-    app_icon_url_72x72?: string;            //
-    app_icon_url_96x96?: string;            //
-    app_icon_url_128x128?: string;          //
-    app_icon_url_144x144?: string;          //
-    app_icon_url_152x152?: string;          //
-    app_icon_url_192x192?: string;          //
-    app_icon_url_384x384?: string;          //
-    app_icon_url_512x512?: string;          //
+    app_icon_url_72?: string;            //
+    app_icon_url_96?: string;            //
+    app_icon_url_128?: string;          //
+    app_icon_url_144?: string;          //
+    app_icon_url_152?: string;          //
+    app_icon_url_192?: string;          //
+    app_icon_url_384?: string;          //
+    app_icon_url_512?: string;          //
 }
+
 
 
 
