@@ -183,6 +183,8 @@ export interface Domain {
 
 export interface Site {
     idx?: string;               // site.idx
+    user_ID?: string;            // Wordpress user ID
+    terms_id_in_order?: string;
     domain?: string;            // Needed to create a site.
     domains?: Array<Domain>;    // Avaiable on response
     name?: string;              // site name
@@ -209,8 +211,15 @@ export interface Site {
     app_icon_url_192?: string;          //
     app_icon_url_384?: string;          //
     app_icon_url_512?: string;          //
+    logo_url?: string;
+    preview_image_url?: string;
+    desktop_banner_width_image_url?: string;  //
+    mobile_banner_width_image_url?: string;  //
+    widget: {
+        desktop_comments: boolean;
+        mobile_comments: boolean;
+    };
 }
-
 
 
 
