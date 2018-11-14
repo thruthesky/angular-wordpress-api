@@ -215,10 +215,10 @@ export interface Site {
     preview_image_url?: string;
     desktop_banner_width_image_url?: string;  //
     mobile_banner_width_image_url?: string;  //
-    widget: {
-        desktop_comments: boolean;
-        mobile_comments: boolean;
-    };
+    widget_desktop_comments?: 'Y' | '';
+    widget_mobile_comments?: 'Y' | '';
+    widget_desktop_posts?: 'Y' | '';
+    widget_mobile_posts?: 'Y' | '';
 }
 
 
