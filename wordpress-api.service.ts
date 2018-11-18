@@ -31,12 +31,12 @@ export class WordpressApiService {
     private http: HttpClient,
     private cookie: CookieService
   ) {
-    console.log('WordpressApiConfig: config: ', this.config);
+    // console.log('WordpressApiConfig: config: ', this.config);
     this.doInit();
   }
 
   doInit() {
-    console.log('WordpressApiService::doInit()');
+    // console.log('WordpressApiService::doInit()');
   }
 
   /**
@@ -81,7 +81,7 @@ export class WordpressApiService {
    * @param e raw http error response
    */
   getErrorFromBackendRawError(e): WordpressApiError {
-    console.log('getError', e);
+    // console.log('getError', e);
     if (!e) {
       return { code: 'falsy_error', message: `Error message is falsy. Meaning error object is emtpy.` };
     }
@@ -177,7 +177,7 @@ export class WordpressApiService {
    * @param options http options
    */
   public get<T>(url: string, options?): Observable<HttpEvent<T>> {
-    console.log('url:', url);
+    // console.log('url:', url);
     return this.http.get<T>(url, options).pipe(
       catchError(e => { throw this.getErrorFromBackendRawError(e); })
     );
@@ -227,7 +227,7 @@ export class WordpressApiService {
     if (options.cache) {
       const memoryData = this.getCache(k);
       if (memoryData) {
-        console.log('systemSettings() return data from memory: ', memoryData);
+        // console.log('systemSettings() return data from memory: ', memoryData);
         return of(memoryData);
       }
     }
@@ -248,7 +248,7 @@ export class WordpressApiService {
      */
     this.get(this.urlSonubApi + `/system-settings?domain=${options.domain}`).pipe(
       tap(data => {
-        console.log('systemSettings() return data from backend : ', data);
+        // console.log('systemSettings() return data from backend : ', data);
         this.setCache(k, data);
         this.setLocalStorage(options.domain, data);
       })
@@ -260,7 +260,7 @@ export class WordpressApiService {
      */
     if (options.cache) {
       const re = this.getLocalStorage(options.domain); // 캐시한 데이터를 읽음
-      console.log(`systemSettings() return data from localStorage: for (${options.domain})`, re);
+      // console.log(`systemSettings() return data from localStorage: for (${options.domain})`, re);
     }
     return <any>subject;
   }
