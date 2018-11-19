@@ -350,8 +350,8 @@ export class WordpressApiService {
   /**
    * Returns root domain only like
    * @example
-   *    'abc.com' from 'www.abc.com'
-   *    'abc.co.kr' from 'www.abc.co.kr' or 'sub.abc.co.kr'
+   *    returns 'abc.com' from 'www.abc.com'
+   *    retruns 'abc.co.kr' from 'www.abc.co.kr' or 'sub.abc.co.kr'
    *
    * @param domain domain including subdomain
    */
